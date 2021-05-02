@@ -65,7 +65,7 @@ services:
       traefik.docker.network: mediaserver_default
       traefik.http.routers.ombi.tls.certresolver: prod
       traefik.http.routers.ombi.rule: Host(`${OMBI_HOST}`)
-      traefik.http.routers.ombi.middlewares: hsts-header
+      traefik.http.routers.ombi.middlewares: hsts-header, basicauth
 
   duplicati:
     labels:

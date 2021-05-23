@@ -151,3 +151,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - default
+  # https://hub.docker.com/repository/registry-1.docker.io/droptablestar/mednex_vending
+  web:
+    image: droptablestar/mednex_vending
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_ENV: development
+    networks:
+      - default

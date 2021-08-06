@@ -6,67 +6,32 @@ networks:
 services:
   # https://docs.linuxserver.io/images/docker-plex
   plex:
-    image: ghcr.io/linuxserver/plex@sha256:571b3886868bb5714254b568adc217db04f5541033c4642416e8928c489c942a
+    image: ghcr.io/linuxserver/plex
     restart: unless-stopped
     environment:
       PUID: "${PUID}"
       PGID: "${PGID}"
       TZ: "${TZ}"
       PLEX_CLAIM: "${PLEX_CLAIM}"
-    networks:
-      - default
+#      ADVERTISE_IP: "https://96.244.84.97:443"
+    # networks:
+    #   - default
+    ports:
+      - 32400:32400/tcp
+      - 3005:3005/tcp
+      - 8324:8324/tcp
+      - 32469:32469/tcp
+      - 1900:1900/udp
+      - 32410:32410/udp
+      - 32412:32412/udp
+      - 32413:32413/udp
+      - 32414:32414/udp
+    network_mode: "bridge"
     volumes:
       - "${CONFIG_DIR}/plex:/config"
       - "${MEDIA_DIR}:/media"
     tmpfs:
       - "/tmp"
-
-  # https://docs.linuxserver.io/images/docker-jellyfin
-  jellyfin:
-    image: ghcr.io/linuxserver/jellyfin@sha256:265e6a39f6ad6e4890016834c4af16bd24a953ea6b85a65b7534cab2db26d6c9
-    restart: unless-stopped
-    environment:
-      PUID: "${PUID}"
-      PGID: "${PGID}"
-      TZ: "${TZ}"
-      JELLYFIN_PublishedServerUrl: "${JELLYFIN_HOST}"
-    networks:
-      - default
-    volumes:
-      - "${CONFIG_DIR}/jellyfin:/config"
-      - "${MEDIA_DIR}:/media"
-
-  # https://docs.linuxserver.io/images/docker-nzbget
-  nzbget:
-    image: ghcr.io/linuxserver/nzbget@sha256:9892e3e582b6d9f0026c1381962634aab67efe9e4fa36879f5f58b2b533121a1
-    restart: unless-stopped
-    environment:
-      PUID: "${PUID}"
-      PGID: "${PGID}"
-      TZ: "${TZ}"
-    networks:
-      - default
-    volumes:
-      - "${CONFIG_DIR}/nzbget:/config"
-      - "${DOWNLOADS_DIR}:/downloads"
-
-  # https://docs.linuxserver.io/images/docker-sonarr
-  sonarr:
-    image: ghcr.io/linuxserver/sonarr@sha256:4b81ea3cf7e927f6a07a2b4bead60ce19113281a105e98c5a66ff52e8f806a0a
-    restart: unless-stopped
-    environment:
-      PUID: "${PUID}"
-      PGID: "${PGID}"
-      TZ: "${TZ}"
-    networks:
-      - default
-    volumes:
-      - "${CONFIG_DIR}/sonarr:/config"
-      - "${DOWNLOADS_DIR}:/downloads"
-      - "${MEDIA_DIR}:/media"
-    links:
-      - nzbhydra
-      - nzbget
 
   # https://docs.linuxserver.io/images/docker-radarr
   radarr:
@@ -82,13 +47,13 @@ services:
       - "${CONFIG_DIR}/radarr:/config"
       - "${DOWNLOADS_DIR}:/downloads"
       - "${MEDIA_DIR}:/media"
-    links:
-      - nzbhydra
-      - nzbget
+    # links:
+    #   - nzbhydra
+    #   - nzbget
 
-  # https://docs.linuxserver.io/images/docker-nzbhydra
-  nzbhydra:
-    image: ghcr.io/linuxserver/nzbhydra2@sha256:fad81fe008d43f1a81310c47af612e63a3399faef0567a6888eb47c1a932a954
+  # https://docs.linuxserver.io/images/docker-nzbget
+  nzbget:
+    image: ghcr.io/linuxserver/nzbget@sha256:9892e3e582b6d9f0026c1381962634aab67efe9e4fa36879f5f58b2b533121a1
     restart: unless-stopped
     environment:
       PUID: "${PUID}"
@@ -97,67 +62,118 @@ services:
     networks:
       - default
     volumes:
-      - "${CONFIG_DIR}/nzbhydra:/config"
+      - "${CONFIG_DIR}/nzbget:/config"
       - "${DOWNLOADS_DIR}:/downloads"
 
+
+  # https://docs.linuxserver.io/images/docker-jellyfin
+  # jellyfin:
+  #   image: ghcr.io/linuxserver/jellyfin@sha256:265e6a39f6ad6e4890016834c4af16bd24a953ea6b85a65b7534cab2db26d6c9
+  #   restart: unless-stopped
+  #   environment:
+  #     PUID: "${PUID}"
+  #     PGID: "${PGID}"
+  #     TZ: "${TZ}"
+  #     JELLYFIN_PublishedServerUrl: "${JELLYFIN_HOST}"
+  #   networks:
+  #     - default
+  #   volumes:
+  #     - "${CONFIG_DIR}/jellyfin:/config"
+  #     - "${MEDIA_DIR}:/media"
+
+  # https://docs.linuxserver.io/images/docker-sonarr
+  # sonarr:
+  #   image: ghcr.io/linuxserver/sonarr@sha256:4b81ea3cf7e927f6a07a2b4bead60ce19113281a105e98c5a66ff52e8f806a0a
+  #   restart: unless-stopped
+  #   environment:
+  #     PUID: "${PUID}"
+  #     PGID: "${PGID}"
+  #     TZ: "${TZ}"
+  #   networks:
+  #     - default
+  #   volumes:
+  #     - "${CONFIG_DIR}/sonarr:/config"
+  #     - "${DOWNLOADS_DIR}:/downloads"
+  #     - "${MEDIA_DIR}:/media"
+  #   links:
+  #     - nzbhydra
+  #     - nzbget
+
+  # https://docs.linuxserver.io/images/docker-nzbhydra
+  # nzbhydra:
+  #   image: ghcr.io/linuxserver/nzbhydra2@sha256:fad81fe008d43f1a81310c47af612e63a3399faef0567a6888eb47c1a932a954
+  #   restart: unless-stopped
+  #   environment:
+  #     PUID: "${PUID}"
+  #     PGID: "${PGID}"
+  #     TZ: "${TZ}"
+  #   networks:
+  #     - default
+  #   volumes:
+  #     - "${CONFIG_DIR}/nzbhydra:/config"
+  #     - "${DOWNLOADS_DIR}:/downloads"
+
   # https://docs.linuxserver.io/images/docker-ombi
-  ombi:
-    image: ghcr.io/linuxserver/ombi@sha256:94782230b06333bf05e5a55129289c2962c7ae51f0d934905785fd5a0903a7f2
-    restart: unless-stopped
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${CONFIG_DIR}/ombi:/config
-    networks:
-      - default
-    links:
-      - sonarr
-      - radarr
-      - plex
+  # ombi:
+  #   image: ghcr.io/linuxserver/ombi@sha256:94782230b06333bf05e5a55129289c2962c7ae51f0d934905785fd5a0903a7f2
+  #   restart: unless-stopped
+  #   environment:
+  #     PUID: ${PUID}
+  #     PGID: ${PGID}
+  #     TZ: ${TZ}
+  #   volumes:
+  #     - ${CONFIG_DIR}/ombi:/config
+  #   networks:
+  #     - default
+  #   links:
+  #     - sonarr
+  #     - radarr
+  #     - plex
 
   # https://docs.linuxserver.io/images/docker-duplicati
-  duplicati:
-    image: ghcr.io/linuxserver/duplicati@sha256:79c12cd7686621d9db3d183c1a21dd271933f8dce48a543cb008e41b29edd150
-    restart: unless-stopped
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-    volumes:
-      - ${CONFIG_DIR}/duplicati:/config:rw
-      - ./:/source:rw
-    networks:
-      - default
+  # duplicati:
+  #   image: ghcr.io/linuxserver/duplicati@sha256:79c12cd7686621d9db3d183c1a21dd271933f8dce48a543cb008e41b29edd150
+  #   restart: unless-stopped
+  #   environment:
+  #     PUID: ${PUID}
+  #     PGID: ${PGID}
+  #     TZ: ${TZ}
+  #   volumes:
+  #     - ${CONFIG_DIR}/duplicati:/config:rw
+  #     - ./:/source:rw
+  #   networks:
+  #     - default
 
   # https://hub.docker.com/r/netdata/netdata
-  netdata:
-    image: netdata/netdata@sha256:b192922c4c1ecb3462326826d44d00d45e42703acaa57a935efedf555dbc32da
-    restart: unless-stopped
-    hostname: ${NETDATA_HOST}
-    environment:
-      PGID: ${DOCKER_PGID}
-      TZ: ${TZ}
-    cap_add:
-      - SYS_PTRACE
-    security_opt:
-      - apparmor:unconfined
-    volumes:
-      - /etc/passwd:/host/etc/passwd:ro
-      - /etc/group:/host/etc/group:ro
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - default
+  # netdata:
+  #   image: netdata/netdata@sha256:b192922c4c1ecb3462326826d44d00d45e42703acaa57a935efedf555dbc32da
+  #   restart: unless-stopped
+  #   hostname: ${NETDATA_HOST}
+  #   environment:
+  #     PGID: ${DOCKER_PGID}
+  #     TZ: ${TZ}
+  #   cap_add:
+  #     - SYS_PTRACE
+  #   security_opt:
+  #     - apparmor:unconfined
+  #   volumes:
+  #     - /etc/passwd:/host/etc/passwd:ro
+  #     - /etc/group:/host/etc/group:ro
+  #     - /proc:/host/proc:ro
+  #     - /sys:/host/sys:ro
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #   networks:
+  #     - default
+
   # https://hub.docker.com/repository/registry-1.docker.io/droptablestar/mednex_vending
-  web:
-    image: droptablestar/mednex_vending
-    restart: unless-stopped
-    ports:
-      - "5000:5000"
-    environment:
-      FLASK_ENV: development
-    networks:
-      - default
+  # web:
+  #   image: droptablestar/mednex_vending
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5000:5000"
+  #   environment:
+  #     FLASK_ENV: development
+  #   networks:
+  #     - default
+  # redis:
+  #   image: "redis:alpine"

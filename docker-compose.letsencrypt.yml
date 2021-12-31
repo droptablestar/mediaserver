@@ -70,6 +70,7 @@ services:
       traefik.http.routers.radarr.middlewares: hsts-header, basicauth
       traefik.http.routers.radarr-api.rule: Host(`${RADARR_HOST}`) && PathPrefix(`/api`)
       traefik.http.routers.radarr-api.middlewares: hsts-header
+      traefik.http.services.radarr.loadbalancer.passHostHeader: true
 
   nzbhydra:
     labels:
@@ -105,6 +106,14 @@ services:
       traefik.http.routers.netdata.rule: Host(`${NETDATA_HOST}`)
       traefik.http.routers.netdata.middlewares: hsts-header, basicauth
 
+  # elrond:
+  #   labels:
+  #     traefik.enable: "true"
+  #     traefik.docker.network: mediaserver_default
+  #     traefik.http.routers.netdata.tls.certresolver: prod
+  #     traefik.http.routers.netdata.rule: Host(`${ELROND_HOST}`)
+  #     traefik.http.routers.netdata.middlewares: hsts-header, basicauth
+
   # web:
   #   labels:
   #     traefik.enable: "true"
@@ -127,8 +136,12 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${CONFIG_DIR}/traefik:/etc/traefik:rw
+      - /var/log/docker:/var/log
     command:
-      - "--log.level=DEBUG"
+      - "--log.level=INFO"
+#      - "--log.filePath=/var/log/traefik/traefik.log"
+      - "--accessLog.filePath=/var/log/traefik/access.log"
+#      - "--accessLog.filters.statusCodes=400-499"
       - "--api=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
@@ -140,10 +153,10 @@ services:
       - "--certificatesresolvers.prod.acme.storage=/etc/traefik/acme.json"
       - "--certificatesresolvers.prod.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.prod.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
-      - "--certificatesResolvers.staging.acme.tlschallenge=true"
-      - "--certificatesresolvers.staging.acme.storage=/etc/traefik/acme.json"
-      - "--certificatesresolvers.staging.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.staging.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      # - "--certificatesResolvers.staging.acme.tlschallenge=true"
+      # - "--certificatesresolvers.staging.acme.storage=/etc/traefik/acme.json"
+      # - "--certificatesresolvers.staging.acme.email=${ACME_EMAIL}"
+      # - "--certificatesresolvers.staging.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
     labels:
       traefik.enable: "true"
       traefik.docker.network: mediaserver_default
@@ -153,3 +166,37 @@ services:
       traefik.http.routers.traefik.service: api@internal
       traefik.http.middlewares.basicauth.basicauth.usersfile: /etc/traefik/.htpasswd
       traefik.http.middlewares.hsts-header.headers.customResponseHeaders.Strict-Transport-Security: "max-age=63072000"
+
+  portainer:
+    image: portainer/portainer-ce:2.11.0
+    command: -H unix:///var/run/docker.sock
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIG_DIR}/portainer:/data
+    labels:
+      # Frontend
+      traefik.enable: true
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.frontend.rule: Host(`${PORTAINER_HOST}`)
+      traefik.http.routers.frontend.entrypoints: websecure
+      traefik.http.routers.frontend.service: frontend
+      traefik.http.routers.frontend.tls.certresolver: prod
+#      traefik.http.routers.frontend.middlewares: hsts-header, basicauth
+      traefik.http.services.frontend.loadbalancer.server.port: 9000
+      
+# http:
+#   services:
+#     aragorn:
+#       loadBalancer:
+#         servers:
+#           - url: "http://192.168.1.179/"
+
+
+
+
+      # traefik.http.routers.aragorn.tls.certresolver: prod
+      # traefik.http.routers.aragorn.rule: Host(`${ARAGORN_HOST}`)
+      # # traefik.http.routers.aragorn.middlewares: hsts-header, basicauth
+      # # traefik.http.routers.aragorn.service: api@internal
+      # traefik.http.services.aragorn.loadbalancer.servers.url: "http://192.168.1.179/"

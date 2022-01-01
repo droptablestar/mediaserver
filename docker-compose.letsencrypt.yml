@@ -1,6 +1,8 @@
 version: "3.7"
 
+    
 services:
+  # plex
   plex:
     labels:
       traefik.enable: "true"
@@ -10,37 +12,7 @@ services:
       traefik.http.services.plex.loadbalancer.server.port: 32400
       traefik.http.services.plex.loadbalancer.server.scheme: http
 
-  # https://docs.linuxserver.io/images/docker-jellyfin
-  jellyfin:
-    image: ghcr.io/linuxserver/jellyfin@sha256:5dc17ccc851e90953e4c519521933af51aeedc961663a8396b516a9e232c2ac7
-    restart: unless-stopped
-    environment:
-      PUID: "${PUID}"
-      PGID: "${PGID}"
-      TZ: "${TZ}"
-      JELLYFIN_PublishedServerUrl: "${JELLYFIN_HOST}"
-    networks:
-      - default
-    volumes:
-      - "${CONFIG_DIR}/jellyfin:/config"
-      - "${MEDIA_DIR}:/media"
-
-  # https://docs.linuxserver.io/images/docker-jellyfin
-
-  jellyfin:
-    image: ghcr.io/linuxserver/jellyfin@sha256:5dc17ccc851e90953e4c519521933af51aeedc961663a8396b516a9e232c2ac7
-    restart: unless-stopped
-    environment:
-      PUID: "${PUID}"
-      PGID: "${PGID}"
-      TZ: "${TZ}"
-      JELLYFIN_PublishedServerUrl: "${JELLYFIN_HOST}"
-    networks:
-      - default
-    volumes:
-      - "${CONFIG_DIR}/jellyfin:/config"
-      - "${MEDIA_DIR}:/media"
-
+  # nzbget
   nzbget:
     labels:
       traefik.enable: "true"
@@ -51,16 +23,7 @@ services:
       traefik.http.routers.nzbget-api.rule: Host(`${NZBGET_HOST}`) && PathPrefix(`/{jsonrpc:([^\/:]*:[^\/:]*/)?jsonrpc}`,`/{xmlrpc:([^\/:]*:[^\/:]*/)?xmlrpc}`)
       traefik.http.routers.nzbget-api.middlewares: hsts-header
 
-  sonarr:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.sonarr.tls.certresolver: prod
-      traefik.http.routers.sonarr.rule: Host(`${SONARR_HOST}`)
-      traefik.http.routers.sonarr.middlewares: hsts-header, basicauth
-      traefik.http.routers.sonarr-api.rule: Host(`${SONARR_HOST}`) && PathPrefix(`/api`)
-      traefik.http.routers.sonarr-api.middlewares: hsts-header
-      
+  # radarr
   radarr:
     labels:
       traefik.enable: "true"
@@ -72,62 +35,30 @@ services:
       traefik.http.routers.radarr-api.middlewares: hsts-header
       traefik.http.services.radarr.loadbalancer.passHostHeader: true
 
-  nzbhydra:
+  # portainer
+  portainer:
+    image: portainer/portainer-ce:2.11.0
+    command: -H unix:///var/run/docker.sock
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${CONFIG_DIR}/portainer:/data
     labels:
-      traefik.enable: "true"
+      # Frontend
+      traefik.enable: true
       traefik.docker.network: mediaserver_default
-      traefik.http.routers.nzbhydra.tls.certresolver: prod
-      traefik.http.routers.nzbhydra.rule: Host(`${NZBHYDRA_HOST}`)
-      traefik.http.routers.nzbhydra.middlewares: hsts-header, basicauth
-      traefik.http.routers.nzbhydra-api.rule: Host(`${NZBHYDRA_HOST}`) && PathPrefix(`/api`,`/getnzb`,`/gettorrent`,`/rss`,`/torznab/api`)
-      traefik.http.routers.nzbhydra-api.middlewares: hsts-header
-
-  ombi:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.ombi.tls.certresolver: prod
-      traefik.http.routers.ombi.rule: Host(`${OMBI_HOST}`)
-      traefik.http.routers.ombi.middlewares: hsts-header, basicauth
-
-  duplicati:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.duplicati.tls.certresolver: prod
-      traefik.http.routers.duplicati.rule: Host(`${DUPLICATI_HOST}`)
-      traefik.http.routers.duplicati.middlewares: hsts-header, basicauth
-
-  netdata:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.netdata.tls.certresolver: prod
-      traefik.http.routers.netdata.rule: Host(`${NETDATA_HOST}`)
-      traefik.http.routers.netdata.middlewares: hsts-header, basicauth
-
-  # elrond:
-  #   labels:
-  #     traefik.enable: "true"
-  #     traefik.docker.network: mediaserver_default
-  #     traefik.http.routers.netdata.tls.certresolver: prod
-  #     traefik.http.routers.netdata.rule: Host(`${ELROND_HOST}`)
-  #     traefik.http.routers.netdata.middlewares: hsts-header, basicauth
-
-  # web:
-  #   labels:
-  #     traefik.enable: "true"
-  #     traefik.docker.network: mediaserver_default
-  #     traefik.http.routers.netdata.tls.certresolver: prod
-  #     traefik.http.routers.netdata.rule: Host(`${WEB_HOST}`)
-  #     traefik.http.routers.netdata.middlewares: hsts-header
+      traefik.http.routers.portainer.rule: Host(`${PORTAINER_HOST}`)
+      traefik.http.routers.portainer.entrypoints: websecure
+      traefik.http.routers.portainer.service: portainer
+      traefik.http.routers.portainer.tls.certresolver: prod
+      traefik.http.services.portainer.loadbalancer.server.port: 9000
 
   # https://hub.docker.com/_/traefik/
   traefik:
     image: traefik:v2.2.8
     restart: unless-stopped
     environment:
-      TZ: "${TZ}"
+      - TZ=${TZ}
     networks:
       - default
     ports:
@@ -138,8 +69,8 @@ services:
       - ${CONFIG_DIR}/traefik:/etc/traefik:rw
       - /var/log/docker:/var/log
     command:
-      - "--log.level=INFO"
-#      - "--log.filePath=/var/log/traefik/traefik.log"
+      - "--log.level=DEBUG"
+      - "--log.filePath=/var/log/traefik/traefik.log"
       - "--accessLog.filePath=/var/log/traefik/access.log"
 #      - "--accessLog.filters.statusCodes=400-499"
       - "--api=true"
@@ -166,37 +97,3 @@ services:
       traefik.http.routers.traefik.service: api@internal
       traefik.http.middlewares.basicauth.basicauth.usersfile: /etc/traefik/.htpasswd
       traefik.http.middlewares.hsts-header.headers.customResponseHeaders.Strict-Transport-Security: "max-age=63072000"
-
-  portainer:
-    image: portainer/portainer-ce:2.11.0
-    command: -H unix:///var/run/docker.sock
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${CONFIG_DIR}/portainer:/data
-    labels:
-      # Frontend
-      traefik.enable: true
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.frontend.rule: Host(`${PORTAINER_HOST}`)
-      traefik.http.routers.frontend.entrypoints: websecure
-      traefik.http.routers.frontend.service: frontend
-      traefik.http.routers.frontend.tls.certresolver: prod
-#      traefik.http.routers.frontend.middlewares: hsts-header, basicauth
-      traefik.http.services.frontend.loadbalancer.server.port: 9000
-      
-# http:
-#   services:
-#     aragorn:
-#       loadBalancer:
-#         servers:
-#           - url: "http://192.168.1.179/"
-
-
-
-
-      # traefik.http.routers.aragorn.tls.certresolver: prod
-      # traefik.http.routers.aragorn.rule: Host(`${ARAGORN_HOST}`)
-      # # traefik.http.routers.aragorn.middlewares: hsts-header, basicauth
-      # # traefik.http.routers.aragorn.service: api@internal
-      # traefik.http.services.aragorn.loadbalancer.servers.url: "http://192.168.1.179/"

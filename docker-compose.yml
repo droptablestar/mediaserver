@@ -1,12 +1,10 @@
 version: "3.7"
-
 networks:
   default:
-
 services:
   # https://docs.linuxserver.io/images/docker-plex
   plex:
-    image: ghcr.io/linuxserver/plex@sha256:3a7b736f20f3d65e208e3f6c2782aa84371631c0fc60003c0947fc8b46d3fa2d
+    image: linuxserver/plex:1.25.2.5319-c43dc0277-ls94
     restart: unless-stopped
     environment:
       - PUID=${PUID}
@@ -26,7 +24,7 @@ services:
       
   # https://docs.linuxserver.io/images/docker-nzbget
   nzbget:
-    image: ghcr.io/linuxserver/nzbget@sha256:997b4c081cfb9f25c897b19add737f8406d151d4936f8eafe7a578c5cc769041
+    image: linuxserver/nzbget:v21.1-ls102
     restart: unless-stopped
     environment:
       - PUID=${PUID}
@@ -40,7 +38,7 @@ services:
 
   # https://docs.linuxserver.io/images/docker-radarr
   radarr:
-    image: ghcr.io/linuxserver/radarr@sha256:3220f525fcdb6744820e7e661529fac5951b65b7daab59424b27e84d0f0576c1
+    image: linuxserver/radarr:3.2.2.5080-ls126
     restart: unless-stopped
     environment:
       - PUID=${PUID}

@@ -1,5 +1,4 @@
 version: "3.7"
-
     
 services:
   # plex
@@ -19,9 +18,7 @@ services:
       traefik.docker.network: mediaserver_default
       traefik.http.routers.nzbget.tls.certresolver: prod
       traefik.http.routers.nzbget.rule: Host(`${NZBGET_HOST}`)
-      traefik.http.routers.nzbget.middlewares: hsts-header, basicauth
-      traefik.http.routers.nzbget-api.rule: Host(`${NZBGET_HOST}`) && PathPrefix(`/{jsonrpc:([^\/:]*:[^\/:]*/)?jsonrpc}`,`/{xmlrpc:([^\/:]*:[^\/:]*/)?xmlrpc}`)
-      traefik.http.routers.nzbget-api.middlewares: hsts-header
+      traefik.http.routers.nzbget.middlewares: hsts-header, ipallowlist
 
   # radarr
   radarr:
@@ -34,6 +31,7 @@ services:
       traefik.http.routers.radarr-api.rule: Host(`${RADARR_HOST}`) && PathPrefix(`/api`)
       traefik.http.routers.radarr-api.middlewares: hsts-header
       traefik.http.services.radarr.loadbalancer.passHostHeader: true
+      traefik.http.routers.radarr.middlewares: hsts-header, ipallowlist
 
   # portainer
   portainer:
@@ -95,5 +93,7 @@ services:
       traefik.http.routers.traefik.rule: Host(`${TRAEFIK_HOST}`)
       traefik.http.routers.traefik.middlewares: hsts-header, basicauth
       traefik.http.routers.traefik.service: api@internal
+      traefik.http.middlewares.test-auth.basicauth.users: "${BASICAUTH_USERS}"
       traefik.http.middlewares.basicauth.basicauth.usersfile: /etc/traefik/.htpasswd
+      traefik.http.middlewares.ipallowlist.ipwhitelist.sourcerange: "${IPALLOWLIST}"
       traefik.http.middlewares.hsts-header.headers.customResponseHeaders.Strict-Transport-Security: "max-age=63072000"

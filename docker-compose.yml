@@ -1,19 +1,21 @@
 version: "3.7"
+
 networks:
   default:
+
 services:
   # https://docs.linuxserver.io/images/docker-plex
   plex:
-    image: linuxserver/plex:1.25.2.5319-c43dc0277-ls94
+    image: linuxserver/plex:1.25.6
     restart: unless-stopped
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=${TZ}
       - PLEX_CLAIM=${PLEX_CLAIM}
-    # networks:
-    #   - default
-    network_mode: "bridge"
+    networks:
+      - default
+    # network_mode: "bridge"
     ports:
       - 32400:32400/tcp
     volumes:
@@ -35,10 +37,12 @@ services:
     volumes:
       - ${CONFIG_DIR}/nzbget:/config
       - ${DOWNLOADS_DIR}:/downloads
+      # - ${ARAGORN_DOWNLOADS_DIR}/completed:/downloads/completed
+      # - ${ELROND_DOWNLOADS_DIR}:/downloads
 
   # https://docs.linuxserver.io/images/docker-radarr
   radarr:
-    image: linuxserver/radarr:3.2.2.5080-ls126
+    image: linuxserver/radarr:4.0.5
     restart: unless-stopped
     environment:
       - PUID=${PUID}
@@ -49,13 +53,14 @@ services:
     volumes:
       - ${CONFIG_DIR}/radarr:/config
       - ${DOWNLOADS_DIR}:/downloads
+      # - ${ARAGORN_DOWNLOADS_DIR}:/downloads
       - ${MEDIA_DIR}:/media
     links:
       # - nzbhydra
       - nzbget
 
   portainer:
-    image: portainer/portainer-ce:2.11.0
+    image: portainer/portainer-ce:2.11.1
     command: -H unix:///var/run/docker.sock
     restart: unless-stopped
     volumes:

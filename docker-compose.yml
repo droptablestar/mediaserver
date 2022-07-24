@@ -1,12 +1,10 @@
 version: "3.7"
-
 networks:
   default:
-
 services:
   # https://docs.linuxserver.io/images/docker-plex
   plex:
-    image: linuxserver/plex:1.25.6
+    image: linuxserver/plex:1.27.2
     restart: unless-stopped
     environment:
       - PUID=${PUID}
@@ -27,6 +25,39 @@ services:
   # https://docs.linuxserver.io/images/docker-nzbget
   nzbget:
     image: linuxserver/nzbget:v21.1-ls102
+      - "/tmp"
+
+  # https://docs.linuxserver.io/images/docker-jellyfin
+  jellyfin:
+    image: linuxserver/jellyfin:10.8.1
+    restart: unless-stopped
+    environment:
+      PUID: "${PUID}"
+      PGID: "${PGID}"
+      TZ: "${TZ}"
+      JELLYFIN_PublishedServerUrl: "${JELLYFIN_HOST}"
+    networks:
+      - default
+    volumes:
+      - "${CONFIG_DIR}/jellyfin:/config"
+      - "${MEDIA_DIR}:/media"
+
+  # https://hub.docker.com/r/linuxserver/prowlarr
+  prowlarr:
+    image: linuxserver/prowlarr:0.4.2-develop
+    restart: unless-stopped
+    environment:
+      PUID: "${PUID}"
+      PGID: "${PGID}"
+      TZ: "${TZ}"
+    networks:
+      - default
+    volumes:
+      - "${CONFIG_DIR}/prowlarr:/config"
+
+  # https://docs.linuxserver.io/images/docker-nzbget
+  nzbget:
+    image: linuxserver/nzbget:21.1.20220721
     restart: unless-stopped
     environment:
       - PUID=${PUID}
@@ -43,6 +74,30 @@ services:
   # https://docs.linuxserver.io/images/docker-radarr
   radarr:
     image: linuxserver/radarr:4.0.5
+      - "${CONFIG_DIR}/nzbget:/config"
+      - "${DOWNLOADS_DIR}:/downloads"
+
+  # https://docs.linuxserver.io/images/docker-sonarr
+  sonarr:
+    image: linuxserver/sonarr:3.0.8
+    restart: unless-stopped
+    environment:
+      PUID: "${PUID}"
+      PGID: "${PGID}"
+      TZ: "${TZ}"
+    networks:
+      - default
+    volumes:
+      - "${CONFIG_DIR}/sonarr:/config"
+      - "${DOWNLOADS_DIR}:/downloads"
+      - "${MEDIA_DIR}:/media"
+    links:
+      - nzbhydra
+      - nzbget
+
+  # https://docs.linuxserver.io/images/docker-radarr
+  radarr:
+    image: linuxserver/radarr:4.1.0
     restart: unless-stopped
     environment:
       - PUID=${PUID}
@@ -62,9 +117,65 @@ services:
   portainer:
     image: portainer/portainer-ce:2.11.1
     command: -H unix:///var/run/docker.sock
+
+  # https://docs.linuxserver.io/images/docker-nzbhydra
+  nzbhydra:
+    image: linuxserver/nzbhydra2:4.4.0
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${CONFIG_DIR}/portainer:/data
     ports:
       - 9000:9000/tcp
+      - "${CONFIG_DIR}/nzbhydra:/config"
+      - "${DOWNLOADS_DIR}:/downloads"
+
+  # https://docs.linuxserver.io/images/docker-ombi
+  ombi:
+    image: linuxserver/ombi:4.16.12
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${CONFIG_DIR}/ombi:/config
+    networks:
+      - default
+    links:
+      - sonarr
+      - radarr
+      - plex
+  # https://docs.linuxserver.io/images/docker-duplicati
+  duplicati:
+    image: linuxserver/duplicati:2.0.6
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+    volumes:
+      - ${CONFIG_DIR}/duplicati:/config:rw
+      - ./:/source:rw
+    networks:
+      - default
+  # https://hub.docker.com/r/netdata/netdata
+  netdata:
+    image: netdata/netdata:v1.35.1
+    restart: unless-stopped
+    hostname: ${NETDATA_HOST}
+    environment:
+      PGID: ${DOCKER_PGID}
+      TZ: ${TZ}
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - default

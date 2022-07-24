@@ -11,7 +11,43 @@ services:
       traefik.http.services.plex.loadbalancer.server.port: 32400
       traefik.http.services.plex.loadbalancer.server.scheme: http
 
+<<<<<<< HEAD:docker-compose.letsencrypt.yml
   # nzbget
+=======
+  jellyfin:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.jellyfin.tls.certresolver: prod
+      traefik.http.routers.jellyfin.rule: Host(`${JELLYFIN_HOST}`)
+      traefik.http.services.jellyfin.loadbalancer.server.port: 8096
+      traefik.http.services.jellyfin.loadbalancer.server.scheme: http
+
+  nzbhydra:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.nzbhydra.tls.certresolver: prod
+      traefik.http.routers.nzbhydra.rule: Host(`${NZBHYDRA_HOST}`)
+      traefik.http.routers.nzbhydra.middlewares: hsts-header
+
+  ombi:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.ombi.tls.certresolver: prod
+      traefik.http.routers.ombi.rule: Host(`${OMBI_HOST}`)
+      traefik.http.routers.ombi.middlewares: hsts-header
+
+  prowlarr:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.prowlarr.tls.certresolver: prod
+      traefik.http.routers.prowlarr.rule: Host(`${PROWLARR_HOST}`)
+      traefik.http.routers.prowlarr.middlewares: hsts-header, ipallowlist
+
+>>>>>>> upstream/master:docker-compose.secure.yml
   nzbget:
     labels:
       traefik.enable: "true"
@@ -19,6 +55,17 @@ services:
       traefik.http.routers.nzbget.tls.certresolver: prod
       traefik.http.routers.nzbget.rule: Host(`${NZBGET_HOST}`)
       traefik.http.routers.nzbget.middlewares: hsts-header, ipallowlist
+<<<<<<< HEAD:docker-compose.letsencrypt.yml
+=======
+
+  sonarr:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.sonarr.tls.certresolver: prod
+      traefik.http.routers.sonarr.rule: Host(`${SONARR_HOST}`)
+      traefik.http.routers.sonarr.middlewares: hsts-header, ipallowlist
+>>>>>>> upstream/master:docker-compose.secure.yml
 
   # radarr
   radarr:
@@ -27,6 +74,7 @@ services:
       traefik.docker.network: mediaserver_default
       traefik.http.routers.radarr.tls.certresolver: prod
       traefik.http.routers.radarr.rule: Host(`${RADARR_HOST}`)
+<<<<<<< HEAD:docker-compose.letsencrypt.yml
       traefik.http.routers.radarr.middlewares: hsts-header, basicauth
       traefik.http.routers.radarr-api.rule: Host(`${RADARR_HOST}`) && PathPrefix(`/api`)
       traefik.http.routers.radarr-api.middlewares: hsts-header
@@ -44,10 +92,29 @@ services:
       traefik.http.routers.portainer.service: portainer
       traefik.http.routers.portainer.tls.certresolver: prod
       traefik.http.services.portainer.loadbalancer.server.port: 9000
+=======
+      traefik.http.routers.radarr.middlewares: hsts-header, ipallowlist
+
+  duplicati:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.duplicati.tls.certresolver: prod
+      traefik.http.routers.duplicati.rule: Host(`${DUPLICATI_HOST}`)
+      traefik.http.routers.duplicati.middlewares: hsts-header, basicauth, ipallowlist
+
+  netdata:
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: mediaserver_default
+      traefik.http.routers.netdata.tls.certresolver: prod
+      traefik.http.routers.netdata.rule: Host(`${NETDATA_HOST}`)
+      traefik.http.routers.netdata.middlewares: hsts-header, basicauth, ipallowlist
+>>>>>>> upstream/master:docker-compose.secure.yml
 
   # https://hub.docker.com/_/traefik/
   traefik:
-    image: traefik:v2.2.8
+    image: traefik:v2.7.1
     restart: unless-stopped
     environment:
       - TZ=${TZ}

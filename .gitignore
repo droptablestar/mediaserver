@@ -1,7 +1,8 @@
-*/
 .env
 docker-compose.override.yml
 
 acme.2.json
 acme.json
 nzbgeek_key
+/*/
+!/.github/

@@ -4,7 +4,7 @@ networks:
 services:
   # https://docs.linuxserver.io/images/docker-plex
   plex:
-    image: linuxserver/plex:1.27.2
+    image: linuxserver/plex:1.28.2
     restart: unless-stopped
     environment:
       - PUID=${PUID}
@@ -13,7 +13,7 @@ services:
       - PLEX_CLAIM=${PLEX_CLAIM}
     networks:
       - default
-    # network_mode: "bridge"
+      # network_mode: "bridge"
     ports:
       - 32400:32400/tcp
     volumes:
@@ -51,20 +51,20 @@ services:
   #     - "${CONFIG_DIR}/prowlarr:/config"
 
   # https://docs.linuxserver.io/images/docker-nzbget
-  nzbget:
-    image: linuxserver/nzbget:21.1.20220721
-    restart: unless-stopped
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    networks:
-      - default
-    volumes:
-      - ${CONFIG_DIR}/nzbget:/config
-      - ${DOWNLOADS_DIR}:/downloads
-      # - ${ARAGORN_DOWNLOADS_DIR}/completed:/downloads/completed
-      # - ${ELROND_DOWNLOADS_DIR}:/downloads
+  # nzbget:
+  #   image: linuxserver/nzbget:21.1.20220721
+  #   restart: unless-stopped
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TZ}
+  #   networks:
+  #     - default
+  #   volumes:
+  #     - ${CONFIG_DIR}/nzbget:/config
+  #     - ${DOWNLOADS_DIR}:/downloads
+  #     # - ${ARAGORN_DOWNLOADS_DIR}/completed:/downloads/completed
+  #     # - ${ELROND_DOWNLOADS_DIR}:/downloads
 
   # https://docs.linuxserver.io/images/docker-sonarr
   # sonarr:
@@ -85,27 +85,27 @@ services:
   #     - nzbget
 
   # https://docs.linuxserver.io/images/docker-radarr
-  radarr:
-    image: linuxserver/radarr:4.1.0
-    restart: unless-stopped
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    networks:
-      - default
-    volumes:
-      - ${CONFIG_DIR}/radarr:/config
-      - ${DOWNLOADS_DIR}:/downloads
-      # - ${ARAGORN_DOWNLOADS_DIR}:/downloads
-      - ${MEDIA_DIR}:/media
-    links:
-      # - nzbhydra
-      - nzbget
+  # radarr:
+  #   image: linuxserver/radarr:4.1.0
+  #   restart: unless-stopped
+  #   environment:
+  #     - PUID=${PUID}
+  #     - PGID=${PGID}
+  #     - TZ=${TZ}
+  #   networks:
+  #     - default
+  #   volumes:
+  #     - ${CONFIG_DIR}/radarr:/config
+  #     - ${DOWNLOADS_DIR}:/downloads
+  #     # - ${ARAGORN_DOWNLOADS_DIR}:/downloads
+  #     - ${MEDIA_DIR}:/media
+  #   links:
+  #     # - nzbhydra
+  #     - nzbget
 
-  portainer:
-    image: portainer/portainer-ce:2.11.1
-    command: -H unix:///var/run/docker.sock
+  # portainer:
+  #   image: portainer/portainer-ce:2.11.1
+  #   command: -H unix:///var/run/docker.sock
 
   # https://docs.linuxserver.io/images/docker-nzbhydra
   # nzbhydra:

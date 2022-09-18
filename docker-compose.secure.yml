@@ -44,13 +44,13 @@ services:
   #     traefik.http.routers.prowlarr.rule: Host(`${PROWLARR_HOST}`)
   #     traefik.http.routers.prowlarr.middlewares: hsts-header, ipallowlist
 
-  nzbget:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.nzbget.tls.certresolver: prod
-      traefik.http.routers.nzbget.rule: Host(`${NZBGET_HOST}`)
-      traefik.http.routers.nzbget.middlewares: hsts-header, ipallowlist
+  # nzbget:
+  #   labels:
+  #     traefik.enable: "true"
+  #     traefik.docker.network: mediaserver_default
+  #     traefik.http.routers.nzbget.tls.certresolver: staging
+  #     traefik.http.routers.nzbget.rule: Host(`${NZBGET_HOST}`)
+  #     traefik.http.routers.nzbget.middlewares: hsts-header, ipallowlist
 
   # sonarr:
   #   labels:
@@ -61,26 +61,26 @@ services:
   #     traefik.http.routers.sonarr.middlewares: hsts-header, ipallowlist
 
   # radarr
-  radarr:
-    labels:
-      traefik.enable: "true"
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.radarr.tls.certresolver: prod
-      traefik.http.routers.radarr.rule: Host(`${RADARR_HOST}`)
-      traefik.http.routers.radarr.middlewares: hsts-header, ipallowlist
+  # radarr:
+  #   labels:
+  #     traefik.enable: "true"
+  #     traefik.docker.network: mediaserver_default
+  #     traefik.http.routers.radarr.tls.certresolver: staging
+  #     traefik.http.routers.radarr.rule: Host(`${RADARR_HOST}`)
+  #     traefik.http.routers.radarr.middlewares: hsts-header, ipallowlist
 
   # portainer
-  portainer:
-    labels:
-      # Frontend
-      traefik.enable: true
-      traefik.docker.network: mediaserver_default
-      traefik.http.routers.portainer.rule: Host(`${PORTAINER_HOST}`)
-      traefik.http.routers.portainer.entrypoints: websecure
-      traefik.http.routers.portainer.service: portainer
-      traefik.http.routers.portainer.tls.certresolver: prod
-      traefik.http.services.portainer.loadbalancer.server.port: 9000
-      traefik.http.routers.radarr.middlewares: hsts-header, ipallowlist
+  # portainer:
+  #   labels:
+  #     # Frontend
+  #     traefik.enable: true
+  #     traefik.docker.network: mediaserver_default
+  #     traefik.http.routers.portainer.rule: Host(`${PORTAINER_HOST}`)
+  #     traefik.http.routers.portainer.entrypoints: websecure
+  #     traefik.http.routers.portainer.service: portainer
+  #     traefik.http.routers.portainer.tls.certresolver: staging
+  #     traefik.http.services.portainer.loadbalancer.server.port: 9000
+  #     traefik.http.routers.radarr.middlewares: hsts-header, ipallowlist
 
   # duplicati:
   #   labels:
@@ -100,7 +100,7 @@ services:
 
   # https://hub.docker.com/_/traefik/
   traefik:
-    image: traefik:v2.7.1
+    image: traefik:v2.8.5
     restart: unless-stopped
     environment:
       - TZ=${TZ}
@@ -129,10 +129,10 @@ services:
       - "--certificatesresolvers.prod.acme.storage=/etc/traefik/acme.json"
       - "--certificatesresolvers.prod.acme.email=${ACME_EMAIL}"
       - "--certificatesresolvers.prod.acme.caserver=https://acme-v02.api.letsencrypt.org/directory"
-      # - "--certificatesResolvers.staging.acme.tlschallenge=true"
-      # - "--certificatesresolvers.staging.acme.storage=/etc/traefik/acme.json"
-      # - "--certificatesresolvers.staging.acme.email=${ACME_EMAIL}"
-      # - "--certificatesresolvers.staging.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesResolvers.staging.acme.tlschallenge=true"
+      - "--certificatesresolvers.staging.acme.storage=/etc/traefik/acme.json"
+      - "--certificatesresolvers.staging.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.staging.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
     labels:
       traefik.enable: "true"
       traefik.docker.network: mediaserver_default
